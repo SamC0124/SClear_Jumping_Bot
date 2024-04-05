@@ -18,9 +18,3 @@ simulate = SIMULATION(viewing_mode, id)
 print("Got to simulate.py")
 
 simulate.Run()
-
-time.sleep(10)
-for i in range(c.populationSize):
-    os.system(f"rm body{i}.sdf")
-    os.system(f"rm brain{i}.sdf")
-    os.system(f"rm fitness{i}.sdf")

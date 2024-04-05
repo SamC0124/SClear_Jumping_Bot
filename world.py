@@ -6,7 +6,7 @@ import CONSTANTS as c
 
 class WORLD():
 
-    def __init__(self, id: any = None, r: int = 0):
+    def __init__(self, id: int = None, r: int = 0):
 
         self.entities = {}
 

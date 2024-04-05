@@ -31,7 +31,7 @@ class SIMULATION:
 
         # Initializing objects
         self.robot = ROBOT(id=self.robotId, p_id=p_id)
-        self.world = WORLD()
+        self.world = WORLD(id=p_id)
 
 
     def Run(self):
