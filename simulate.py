@@ -15,6 +15,7 @@ from simulation import SIMULATION
 viewing_mode = sys.argv[1]
 id = int(sys.argv[2])
 simulate = SIMULATION(viewing_mode, id)
+print("Got to simulate.py")
 
 simulate.Run()
 

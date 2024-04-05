@@ -33,8 +33,7 @@ class ROBOT:
                 self.motors[jointName] = MOTOR(jointName)
 
     def Sense(self, index: int):
-        for sensor in self.sensors.values():
-            pass
+        pass
 
     def Think(self):
         self.nn.Update()

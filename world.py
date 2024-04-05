@@ -11,4 +11,4 @@ class WORLD():
         self.entities = {}
 
         self.planeId = pb.loadURDF("plane.urdf")
-        pb.loadSDF("world.sdf")
+        pb.loadSDF(f"world{id}.sdf")

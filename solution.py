@@ -27,7 +27,8 @@ class Solution():
         if view_version != "DIRECT" and view_version != "GUI":
             raise Exception("INVALID VIEWING TYPE GIVEN")
 
-        os.system(f"python3 simulate.py {view_version} {self.myId} 2&>1 &")
+        status = os.system(f"python3 simulate.py {view_version} {self.myId} 2&>1 &")
+        print(status)
 
 
     def Wait_For_Simulation_To_End(self):

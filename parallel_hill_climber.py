@@ -17,12 +17,12 @@ class PARALLEL_HILL_CLIMBER():
             self.parents[f'parent{idx}'] = Solution([[0 for _ in range(c.numMotorNeurons)] for _ in range(c.numSensorNeurons)], idx)
 
 
-
     def Evolve(self):
         self.Evaluate(self.parents)
         for gen in range(c.numberOfGenerations):
             self.Evolve_For_One_Generation()
             self.Evaluate(self.children)
+            self.Print()
             self.Select()
         self.Show_Best()
 
@@ -36,7 +36,6 @@ class PARALLEL_HILL_CLIMBER():
     def Evolve_For_One_Generation(self):
         self.Spawn()
         self.Mutate()
-        self.Print()
 
 
     def Print(self):
@@ -76,6 +75,6 @@ class PARALLEL_HILL_CLIMBER():
     def Show_Best(self):
         best_parent = list(self.parents.items())[0][1]
         for parent_key in self.parents.keys():
-            if float(self.parents[parent_key].fitness[0]) > float(best_parent.fitness[0]):
+            if float(self.parents[parent_key].fitness[0]) < float(best_parent.fitness[0]):
                 self.parents[parent_key] = best_parent
         best_parent.Start_Simulation("GUI")
