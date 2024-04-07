@@ -4,7 +4,7 @@ import pybullet
 import pybullet as pb
 import pybullet_data
 import pyrosim.pyrosim as pyrosim
-import CONSTANTS as c
+import constants as c
 from motor import MOTOR
 from sensor import SENSOR
 from pyrosim.neuralNetwork import NEURAL_NETWORK
@@ -16,6 +16,7 @@ class ROBOT:
         self.Prepare_To_Act()
         self.id = id
         self.nn = NEURAL_NETWORK(f"brain{p_id}.nndf")
+        self.max_height = 0
 
     def Prepare_To_Sense(self, num_motors: int = 0, num_sensors: int = 0):
         self.sensors = {}
@@ -24,11 +25,10 @@ class ROBOT:
             self.sensors[linkName] = SENSOR(linkName)
 
     def Prepare_To_Act(self):
-
         self.motors = {}
         for jointName in pyrosim.jointNamesToIndices:
             if jointName == b'Body_BackLeg':
-                self.motors[jointName] = MOTOR(jointName, frequency=c.frequency/2)
+                self.motors[jointName] = MOTOR(jointName)
             else:
                 self.motors[jointName] = MOTOR(jointName)
 
@@ -39,25 +39,40 @@ class ROBOT:
         self.nn.Update()
 
     def Act(self):
-
         for neuronName in self.nn.Get_Neuron_Names():
             if self.nn.Is_Motor_Neuron(neuronName):
+                # Current location of the body unit at [0][0,1,2]. The Z characteristic is for current elevation of the
+                # body, but this doesn't account for legs touching the ground.
+                body_pos = pybullet.getLinkState(self.id, 0)
+                if body_pos[0][2] > self.max_height:
+                    max_height = body_pos[0][2]
+                position_to_air = 0 # 0 indicates that the robot is touching the ground, 1 indicates that the robot is almost touching the ground, 2 indicates that the robot is in the air.
+                # Center of the body is at 0,0,1
+                if body_pos[0][2] > 1.1:
+                    body_pos = 2
+                    print("In the Air!")
+                elif body_pos[0][2] < 1.1:
+                    body_pos = 0
+                    print("Approaching or On the Ground!")
+
                 jointName = self.nn.Get_Motor_Neurons_Joint(neuronName).encode('utf-8')
                 desiredAngle = self.nn.Get_Value_Of(neuronName) * c.motorAngleRange
                 self.motors[jointName].Set_Value(desiredAngle)
                 self.motors[jointName].Act(desiredAngle)
 
 
+    # We can modify this fitness function to record whether the link is touching the ground or not, or record from
+    # another file the total number of iterations that all the links weren't touching the ground.
     def GetFitness(self, p_id):
-        stateZero = pybullet.getLinkState(self.id, 0)
+        basePositionAndOrientation = pybullet.getBasePositionAndOrientation(self.id)
 
-        positionOfStateZero = stateZero[0]
-        xCoord = positionOfStateZero[0]
-        yCoord = positionOfStateZero[1]
-        zCoord = positionOfStateZero[2]
+        basePosition = basePositionAndOrientation[0]
+        xCoord = basePosition[0]
+        yCoord = basePosition[1]
+        zCoord = basePosition[2]
 
         f = open(f"tmp{p_id}.txt", "w")
-        f.write(str(xCoord) + ", " + str(yCoord) + ", " + str(zCoord) + "\n")
+        f.write(str(xCoord) + ", " + str(yCoord) + ", " + str(zCoord) + ", "  + str(self.max_height))
         os.rename(f"tmp{p_id}.txt", f"fitness{p_id}.txt")
         f.close()
 

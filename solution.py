@@ -3,7 +3,7 @@ import os
 import pyrosim
 from pyrosim import pyrosim
 import time
-import CONSTANTS as c
+import constants as c
 
 
 class Solution():
@@ -67,27 +67,27 @@ class Solution():
         pyrosim.Send_Joint(name=f"Body_FrontLeg", parent="Body", child="FrontLeg", type="revolute",
                            position=[0, 0.5, 1.0], jointAxis="1 0 0")
         pyrosim.Send_Cube(name=f"FrontLeg", pos=[0, 0.5, 0], size=[length, width, height])
-        pyrosim.Send_Joint(name=f"FrontLeg_FrontRear", parent="FrontLeg", child="FrontRear", type="revolute",
+        pyrosim.Send_Joint(name=f"FrontLeg_FrontCalf", parent="FrontLeg", child="FrontCalf", type="revolute",
                            position=[0, 0.5, 0], jointAxis="1 0 0")
-        pyrosim.Send_Cube(name=f"FrontRear", pos=[0, 0.5, -0.5], size=[length, 0.2, 1.0])
+        pyrosim.Send_Cube(name=f"FrontCalf", pos=[0, 0.5, -0.5], size=[length, 0.2, 1.0])
         pyrosim.Send_Joint(name=f"Body_BackLeg", parent="Body", child="BackLeg", type="revolute",
                            position=[0, -0.5, 1.0], jointAxis="1 0 0")
         pyrosim.Send_Cube(name=f"BackLeg", pos=[0, -0.5, 0], size=[length, width, height])
-        pyrosim.Send_Joint(name=f"BackLeg_BackRear", parent="BackLeg", child="BackRear", type="revolute",
+        pyrosim.Send_Joint(name=f"BackLeg_BackCalf", parent="BackLeg", child="BackCalf", type="revolute",
                            position=[0, -0.5, 0], jointAxis="1 0 0")
-        pyrosim.Send_Cube(name=f"BackRear", pos=[0, -0.5, -0.5], size=[length, 0.2, 1])
+        pyrosim.Send_Cube(name=f"BackCalf", pos=[0, -0.5, -0.5], size=[length, 0.2, 1])
         pyrosim.Send_Joint(name=f"Body_LeftLeg", parent="Body", child="LeftLeg", type="revolute",
                            position=[0.5, 0, 1.0], jointAxis="0 1 0")
         pyrosim.Send_Cube(name=f"LeftLeg", pos=[0.5, 0, 0], size=[1, 0.2, height])
-        pyrosim.Send_Joint(name=f"LeftLeg_LeftRear", parent="LeftLeg", child="LeftRear", type="revolute",
+        pyrosim.Send_Joint(name=f"LeftLeg_LeftCalf", parent="LeftLeg", child="LeftCalf", type="revolute",
                            position=[0.5, 0, 0], jointAxis="0 1 0")
-        pyrosim.Send_Cube(name=f"LeftRear", pos=[0.5, 0, -0.5], size=[0.2, 0.2, 1.0])
+        pyrosim.Send_Cube(name=f"LeftCalf", pos=[0.5, 0, -0.5], size=[0.2, 0.2, 1.0])
         pyrosim.Send_Joint(name=f"Body_RightLeg", parent="Body", child="RightLeg", type="revolute",
                            position=[-0.5, 0, 1.0], jointAxis="0 1 0")
         pyrosim.Send_Cube(name=f"RightLeg", pos=[-0.5, 0, 0], size=[1, 0.2, height])
-        pyrosim.Send_Joint(name=f"RightLeg_RightRear", parent="RightLeg", child="RightRear", type="revolute",
+        pyrosim.Send_Joint(name=f"RightLeg_RightCalf", parent="RightLeg", child="RightCalf", type="revolute",
                            position=[-0.5, 0, 0], jointAxis="0 1 0")
-        pyrosim.Send_Cube(name=f"RightRear", pos=[-0.5, 0, -0.5], size=[0.2, 0.2, 1.0])
+        pyrosim.Send_Cube(name=f"RightCalf", pos=[-0.5, 0, -0.5], size=[0.2, 0.2, 1.0])
 
         pyrosim.End()
 
@@ -102,8 +102,8 @@ class Solution():
             pyrosim.Send_Motor_Neuron(name=link_index + c.numSensorNeurons - 1, jointName=f"Body_{link}")
             link_index += 1
         for link in ["Front", "Back", "Right", "Left"]:
-            pyrosim.Send_Sensor_Neuron(name=link_index, linkName=link + "Rear")
-            pyrosim.Send_Motor_Neuron(name=link_index + c.numSensorNeurons - 1, jointName=f"{link}Leg_{link}Rear")
+            pyrosim.Send_Sensor_Neuron(name=link_index, linkName=link + "Calf")
+            pyrosim.Send_Motor_Neuron(name=link_index + c.numSensorNeurons - 1, jointName=f"{link}Leg_{link}Calf")
             link_index += 1
         # Random Search Functionality
         for sensor_synapse in range(0, c.numSensorNeurons):

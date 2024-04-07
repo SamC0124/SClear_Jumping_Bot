@@ -2,7 +2,7 @@ import solution
 from solution import Solution
 import copy
 import random
-import CONSTANTS as c
+import constants as c
 import operator
 import os
 
@@ -44,7 +44,7 @@ class PARALLEL_HILL_CLIMBER():
         child_keys = self.children.keys()
         child_keys = list(child_keys)
         for idx in range(len(parent_keys)):
-            print(f"{self.parents[parent_keys[idx]].fitness[0]} Fitness for {parent_keys[idx]}, {self.children[child_keys[idx]].fitness[0]} Fitness for {child_keys[idx]}")
+            print(f"{self.parents[parent_keys[idx]].fitness[2]} Fitness for Parent {parent_keys[idx]}, {self.children[child_keys[idx]].fitness[2]} Fitness for Child #{child_keys[idx]}")
         print("\n")
 
 
@@ -68,13 +68,13 @@ class PARALLEL_HILL_CLIMBER():
         child_keys = self.children.keys()
         child_keys = list(child_keys)
         for idx in range(len(parent_keys)):
-            if float(self.parents[parent_keys[idx]].fitness[0]) > float(self.children[child_keys[idx]].fitness[0]):
+            if float(self.parents[parent_keys[idx]].fitness[2]) < float(self.children[child_keys[idx]].fitness[2]):
                 self.parents[parent_keys[idx]] = self.children[child_keys[idx]]
 
 
     def Show_Best(self):
         best_parent = list(self.parents.items())[0][1]
         for parent_key in self.parents.keys():
-            if float(self.parents[parent_key].fitness[0]) < float(best_parent.fitness[0]):
+            if float(self.parents[parent_key].fitness[2]) > float(best_parent.fitness[2]):
                 self.parents[parent_key] = best_parent
         best_parent.Start_Simulation("GUI")

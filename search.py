@@ -1,4 +1,4 @@
-import CONSTANTS as c
+import constants as c
 import os
 import parallel_hill_climber as phc
 import time

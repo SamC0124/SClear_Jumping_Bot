@@ -1,4 +1,4 @@
-import CONSTANTS as c
+import constants as c
 import numpy as np
 import os
 import pybullet as pb
@@ -26,11 +26,13 @@ class SIMULATION:
             raise Exception("INVALID VIEW TYPE GIVEN")
         pb.setAdditionalSearchPath(pybullet_data.getDataPath())
         pb.setGravity(0, 0, -9.8)
-        self.robotId = pb.loadURDF(f"body{p_id}.urdf")
+        print(f"body{type(self.p_id)}.urdf")
+
+        self.robotId = pb.loadURDF(f"body{self.p_id}.urdf")
         pyrosim.Prepare_To_Simulate(self.robotId)
 
         # Initializing objects
-        self.robot = ROBOT(id=self.robotId, p_id=p_id)
+        self.robot = ROBOT(id=self.robotId, p_id=self.p_id)
         self.world = WORLD(id=p_id)
 
 
@@ -48,12 +50,13 @@ class SIMULATION:
 
 
     def Save_Values(self):
-        for motor in self.robot.motors.values():
-            np.savetxt(f"sensoryData/{motor.jointOfOrigin}MotorValues.csv", motor.movementMapping, delimiter=",")
-            np.save(f"sensoryData/{str(motor.jointOfOrigin)}MotorValuesNumpy", motor.movementMapping)
-        for sensor in self.robot.sensors.values():
-            np.savetxt(f"sensoryData/{sensor.name}SensorValues.csv", sensor.values, delimiter=",")
-            np.save(f"sensoryData/{sensor.name}SensorValuesNumpy", sensor.values)
+        pass
+        # for motor in self.robot.motors.values():
+        #     np.savetxt(f"sensoryData/{motor.jointOfOrigin}MotorValues.csv", motor.movementMapping, delimiter=",")
+        #     np.save(f"sensoryData/{str(motor.jointOfOrigin)}MotorValuesNumpy", motor.movementMapping)
+        # for sensor in self.robot.sensors.values():
+        #     np.savetxt(f"sensoryData/{sensor.name}SensorValues.csv", sensor.values, delimiter=",")
+        #     np.save(f"sensoryData/{sensor.name}SensorValuesNumpy", sensor.values)
 
 
     def Get_Fitness(self):
