@@ -40,7 +40,7 @@ class SIMULATION:
         for i in range(c.iterations):
             self.robot.Sense(index=i)
             self.robot.Think()
-            self.robot.Act()
+            self.robot.Act(i)
 
             pb.stepSimulation(self.physicsClient)
 

@@ -38,14 +38,14 @@ class ROBOT:
     def Think(self):
         self.nn.Update()
 
-    def Act(self):
+    def Act(self, t: int):
         for neuronName in self.nn.Get_Neuron_Names():
             if self.nn.Is_Motor_Neuron(neuronName):
                 # Current location of the body unit at [0][0,1,2]. The Z characteristic is for current elevation of the
                 # body, but this doesn't account for legs touching the ground.
                 body_pos = pybullet.getLinkState(self.id, 0)
                 if body_pos[0][2] > self.max_height:
-                    max_height = body_pos[0][2]
+                    self.max_height = body_pos[0][2]
                 position_to_air = 0 # 0 indicates that the robot is touching the ground, 1 indicates that the robot is almost touching the ground, 2 indicates that the robot is in the air.
                 # Center of the body is at 0,0,1
                 if body_pos[0][2] > 1.1:
@@ -56,7 +56,13 @@ class ROBOT:
                     print("Approaching or On the Ground!")
 
                 jointName = self.nn.Get_Motor_Neurons_Joint(neuronName).encode('utf-8')
-                desiredAngle = self.nn.Get_Value_Of(neuronName) * c.motorAngleRange
+                time_step = (t % 500) # Jumping goes through a cycle every 500 time steps, starting at t = 0.
+                if time_step < 100:
+                    desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.1) - np.sin((time_step * np.pi) / 400)
+                elif time_step < 300:
+                    desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.1) - np.cos((time_step * np.pi) / 100)
+                else:
+                    desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.1) + np.cos((time_step * np.pi) / 400)
                 self.motors[jointName].Set_Value(desiredAngle)
                 self.motors[jointName].Act(desiredAngle)
 
@@ -72,7 +78,7 @@ class ROBOT:
         zCoord = basePosition[2]
 
         f = open(f"tmp{p_id}.txt", "w")
-        f.write(str(xCoord) + ", " + str(yCoord) + ", " + str(zCoord) + ", "  + str(self.max_height))
+        f.write(str(xCoord) + ", " + str(yCoord) + ", " + str(zCoord) + ", " + str(self.max_height))
         os.rename(f"tmp{p_id}.txt", f"fitness{p_id}.txt")
         f.close()
 

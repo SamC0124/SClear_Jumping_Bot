@@ -68,13 +68,13 @@ class PARALLEL_HILL_CLIMBER():
         child_keys = self.children.keys()
         child_keys = list(child_keys)
         for idx in range(len(parent_keys)):
-            if float(self.parents[parent_keys[idx]].fitness[2]) < float(self.children[child_keys[idx]].fitness[2]):
+            if float(self.parents[parent_keys[idx]].fitness[3]) < float(self.children[child_keys[idx]].fitness[3]):
                 self.parents[parent_keys[idx]] = self.children[child_keys[idx]]
 
 
     def Show_Best(self):
         best_parent = list(self.parents.items())[0][1]
         for parent_key in self.parents.keys():
-            if float(self.parents[parent_key].fitness[2]) > float(best_parent.fitness[2]):
+            if float(self.parents[parent_key].fitness[3]) > float(best_parent.fitness[3]):
                 self.parents[parent_key] = best_parent
         best_parent.Start_Simulation("GUI")
