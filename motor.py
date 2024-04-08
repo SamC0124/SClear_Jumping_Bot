@@ -20,13 +20,20 @@ class MOTOR():
         self.movementMapping = [np.sin(self.frequency * (i * (np.pi / (c.iterations / 2)) - self.phaseOffset)) * self.amplitude for i in range(c.iterations)]
 
 
-    def Act(self, desired_angle):
-        self.Set_Value(desired_angle)
+    def Act(self, desired_angle, newAmplitude = -1, givenForce = -1):
+        self.Set_Value(desired_angle, newAmplitude, givenForce)
 
-    def Set_Value(self, desiredAngle):
+
+    def Set_Value(self, desiredAngle, newAmplitude, givenForce):
+        if givenForce == -1:
+            givenForce = self.motorForce
+        if newAmplitude == -1:
+            newAmplitude = c.amplitude
+        else:
+            self.amplitude = newAmplitude
         pyrosim.Set_Motor_For_Joint(
             bodyIndex=0,
             jointName=self.jointOfOrigin,
             controlMode=pb.POSITION_CONTROL,
             targetPosition=desiredAngle,
-            maxForce=self.motorForce)
+            maxForce=givenForce)

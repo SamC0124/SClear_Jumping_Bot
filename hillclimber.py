@@ -2,7 +2,7 @@ import solution
 from solution import Solution
 import copy
 import random
-import CONSTANTS
+import constants
 import operator
 import os
 

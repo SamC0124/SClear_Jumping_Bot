@@ -56,15 +56,35 @@ class ROBOT:
                     print("Approaching or On the Ground!")
 
                 jointName = self.nn.Get_Motor_Neurons_Joint(neuronName).encode('utf-8')
-                time_step = (t % 500) # Jumping goes through a cycle every 500 time steps, starting at t = 0.
-                if time_step < 100:
-                    desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.1) - np.sin((time_step * np.pi) / 400)
+                joint_name_not_encoded = self.nn.Get_Motor_Neurons_Joint(neuronName)
+                time_step = (t % 250) # Jumping goes through a cycle every 500 time steps, starting at t = 0.
+                if time_step < 200:
+                    if 'Calf' in joint_name_not_encoded and ('Back' in joint_name_not_encoded or 'Left' in joint_name_not_encoded):
+                        desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) + np.sin((time_step * np.pi) / 400) * 0.5
+                    elif 'Body' in joint_name_not_encoded and ('Front' in joint_name_not_encoded or 'Right' in joint_name_not_encoded):
+                        desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) + np.sin((time_step * np.pi) / 400) * 0.5
+                    else:
+                        desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) - np.sin((time_step * np.pi) / 400) * 0.5
                 elif time_step < 300:
-                    desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.1) - np.cos((time_step * np.pi) / 100)
+                    if 'Body' in joint_name_not_encoded and ('Back' in joint_name_not_encoded or 'Left' in joint_name_not_encoded):
+                        desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) - np.cos(((time_step - 200) * np.pi) / 50) * 2.5
+                    elif 'Calf' in joint_name_not_encoded and ('Front' in joint_name_not_encoded or 'Right' in joint_name_not_encoded):
+                        desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) - np.cos(((time_step - 200) * np.pi) / 50) * 2.5
+                    else:
+                        desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) + np.cos(((time_step - 200) * np.pi) / 50) * 2.5
                 else:
-                    desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.1) + np.cos((time_step * np.pi) / 400)
-                self.motors[jointName].Set_Value(desiredAngle)
-                self.motors[jointName].Act(desiredAngle)
+                    if 'Calf' in joint_name_not_encoded and (
+                            'Back' in joint_name_not_encoded or 'Left' in joint_name_not_encoded):
+                        desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) + np.sin((time_step * np.pi) / 100) * 0.5
+                    elif 'Body' in joint_name_not_encoded and (
+                            'Front' in joint_name_not_encoded or 'Right' in joint_name_not_encoded):
+                        desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) + np.sin((time_step * np.pi) / 100) * 0.5
+                    else:
+                        desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) - np.sin((time_step * np.pi) / 100) * 0.5
+                if time_step > 200 or time_step < 300:
+                    self.motors[jointName].Act(desiredAngle, np.pi / 4, 300)
+                else:
+                    self.motors[jointName].Act(desiredAngle, -1, 40)
 
 
     # We can modify this fitness function to record whether the link is touching the ground or not, or record from

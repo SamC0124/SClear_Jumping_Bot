@@ -44,7 +44,7 @@ class PARALLEL_HILL_CLIMBER():
         child_keys = self.children.keys()
         child_keys = list(child_keys)
         for idx in range(len(parent_keys)):
-            print(f"{self.parents[parent_keys[idx]].fitness[2]} Fitness for Parent {parent_keys[idx]}, {self.children[child_keys[idx]].fitness[2]} Fitness for Child #{child_keys[idx]}")
+            print(f"{self.parents[parent_keys[idx]].fitness[3]} Fitness for Parent {parent_keys[idx]}, {self.children[child_keys[idx]].fitness[3]} Fitness for Child #{child_keys[idx]}")
         print("\n")
 
 
