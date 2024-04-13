@@ -2,7 +2,7 @@ import numpy as np
 import pybullet as pb
 import pybullet_data
 import pyrosim.pyrosim as pyrosim
-import CONSTANTS as c
+import constants as c
 
 class WORLD():
 

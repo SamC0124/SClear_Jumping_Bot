@@ -17,6 +17,7 @@ class ROBOT:
         self.id = id
         self.nn = NEURAL_NETWORK(f"brain{p_id}.nndf")
         self.max_height = 0
+        self.touch_matrix = np.ndarray((c.numSensorNeurons, c.iterations), dtype=int)
 
     def Prepare_To_Sense(self, num_motors: int = 0, num_sensors: int = 0):
         self.sensors = {}
@@ -33,7 +34,8 @@ class ROBOT:
                 self.motors[jointName] = MOTOR(jointName)
 
     def Sense(self, index: int):
-        pass
+        for idx_sensor in range(len(self.sensors)):
+            self.touch_matrix[index][idx_sensor] = self.sensors[idx_sensor].Get_Value()
 
     def Think(self):
         self.nn.Update()
@@ -47,13 +49,6 @@ class ROBOT:
                 if body_pos[0][2] > self.max_height:
                     self.max_height = body_pos[0][2]
                 position_to_air = 0 # 0 indicates that the robot is touching the ground, 1 indicates that the robot is almost touching the ground, 2 indicates that the robot is in the air.
-                # Center of the body is at 0,0,1
-                if body_pos[0][2] > 1.1:
-                    body_pos = 2
-                    print("In the Air!")
-                elif body_pos[0][2] < 1.1:
-                    body_pos = 0
-                    print("Approaching or On the Ground!")
 
                 jointName = self.nn.Get_Motor_Neurons_Joint(neuronName).encode('utf-8')
                 joint_name_not_encoded = self.nn.Get_Motor_Neurons_Joint(neuronName)
@@ -65,13 +60,13 @@ class ROBOT:
                         desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) + np.sin((time_step * np.pi) / 400) * 0.5
                     else:
                         desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) - np.sin((time_step * np.pi) / 400) * 0.5
-                elif time_step < 300:
+                elif time_step < 250:
                     if 'Body' in joint_name_not_encoded and ('Back' in joint_name_not_encoded or 'Left' in joint_name_not_encoded):
-                        desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) - np.cos(((time_step - 200) * np.pi) / 50) * 2.5
+                        desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) - np.cos(((time_step - 200) * np.pi) / 25) * 2.5
                     elif 'Calf' in joint_name_not_encoded and ('Front' in joint_name_not_encoded or 'Right' in joint_name_not_encoded):
-                        desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) - np.cos(((time_step - 200) * np.pi) / 50) * 2.5
+                        desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) - np.cos(((time_step - 200) * np.pi) / 25) * 2.5
                     else:
-                        desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) + np.cos(((time_step - 200) * np.pi) / 50) * 2.5
+                        desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) + np.cos(((time_step - 200) * np.pi) / 25) * 2.5
                 else:
                     if 'Calf' in joint_name_not_encoded and (
                             'Back' in joint_name_not_encoded or 'Left' in joint_name_not_encoded):
@@ -82,7 +77,7 @@ class ROBOT:
                     else:
                         desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) - np.sin((time_step * np.pi) / 100) * 0.5
                 if time_step > 200 or time_step < 300:
-                    self.motors[jointName].Act(desiredAngle, np.pi / 4, 300)
+                    self.motors[jointName].Act(desiredAngle, np.pi / 4, 100 * self.nn.Get_Value_Of(neuronName))
                 else:
                     self.motors[jointName].Act(desiredAngle, -1, 40)
 
@@ -97,8 +92,20 @@ class ROBOT:
         yCoord = basePosition[1]
         zCoord = basePosition[2]
 
+        total_airtime = 0
+        for idx in range(len(self.touch_matrix)):
+            # Assume the robot is in the air until proven otherwise
+            in_air = True
+
+            # Check each sensor, to see if any sensor is not equal to -1.
+            for x in range(len(self.touch_matrix[idx])):
+                if self.touch_matrix[idx][x] != -1:
+                    in_air = False
+
+            # If in_air is still true, then increment the total_airtime variable.
+
         f = open(f"tmp{p_id}.txt", "w")
-        f.write(str(xCoord) + ", " + str(yCoord) + ", " + str(zCoord) + ", " + str(self.max_height))
+        f.write(str(xCoord) + ", " + str(yCoord) + ", " + str(zCoord) + ", " + str((self.max_height * 0.2) + (xCoord * 0.5) + (total_airtime * 0.01)))
         os.rename(f"tmp{p_id}.txt", f"fitness{p_id}.txt")
         f.close()
 
