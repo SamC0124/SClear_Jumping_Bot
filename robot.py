@@ -34,9 +34,12 @@ class ROBOT:
                 self.motors[jointName] = MOTOR(jointName)
 
     def Sense(self, index: int):
-        for idx_sensor in range(len(self.sensors)):
-            self.touch_matrix[index][idx_sensor] = self.sensors[idx_sensor].Get_Value()
-
+        # looping through the different sensor names, because sensors dictionary cannot be references with int index values.
+        idx_sensor = 0
+        for sensor_name in self.sensors.keys():
+            print(self.sensors[sensor_name])
+            self.touch_matrix[idx_sensor, index] = self.sensors[sensor_name].Get_Value(index)
+            idx_sensor += 1
     def Think(self):
         self.nn.Update()
 
@@ -54,30 +57,34 @@ class ROBOT:
                 joint_name_not_encoded = self.nn.Get_Motor_Neurons_Joint(neuronName)
                 time_step = (t % 250) # Jumping goes through a cycle every 500 time steps, starting at t = 0.
                 if time_step < 200:
-                    if 'Calf' in joint_name_not_encoded and ('Back' in joint_name_not_encoded or 'Left' in joint_name_not_encoded):
+                    if 'Foot' in joint_name_not_encoded:
+                        desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.5)
+                    elif 'Calf' in joint_name_not_encoded and ('Back' in joint_name_not_encoded or 'Left' in joint_name_not_encoded):
                         desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) + np.sin((time_step * np.pi) / 400) * 0.5
                     elif 'Body' in joint_name_not_encoded and ('Front' in joint_name_not_encoded or 'Right' in joint_name_not_encoded):
                         desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) + np.sin((time_step * np.pi) / 400) * 0.5
                     else:
                         desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) - np.sin((time_step * np.pi) / 400) * 0.5
                 elif time_step < 250:
-                    if 'Body' in joint_name_not_encoded and ('Back' in joint_name_not_encoded or 'Left' in joint_name_not_encoded):
+                    if 'Foot' in joint_name_not_encoded:
+                        desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.5) + 1
+                    elif 'Body' in joint_name_not_encoded and ('Back' in joint_name_not_encoded or 'Left' in joint_name_not_encoded):
                         desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) - np.cos(((time_step - 200) * np.pi) / 25) * 2.5
                     elif 'Calf' in joint_name_not_encoded and ('Front' in joint_name_not_encoded or 'Right' in joint_name_not_encoded):
                         desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) - np.cos(((time_step - 200) * np.pi) / 25) * 2.5
                     else:
                         desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) + np.cos(((time_step - 200) * np.pi) / 25) * 2.5
                 else:
-                    if 'Calf' in joint_name_not_encoded and (
-                            'Back' in joint_name_not_encoded or 'Left' in joint_name_not_encoded):
+                    if 'Foot' in joint_name_not_encoded:
+                        desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.5)
+                    elif 'Calf' in joint_name_not_encoded and ('Back' in joint_name_not_encoded or 'Left' in joint_name_not_encoded):
                         desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) + np.sin((time_step * np.pi) / 100) * 0.5
-                    elif 'Body' in joint_name_not_encoded and (
-                            'Front' in joint_name_not_encoded or 'Right' in joint_name_not_encoded):
+                    elif 'Body' in joint_name_not_encoded and ('Front' in joint_name_not_encoded or 'Right' in joint_name_not_encoded):
                         desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) + np.sin((time_step * np.pi) / 100) * 0.5
                     else:
                         desiredAngle = (self.nn.Get_Value_Of(neuronName) * 0.3) - np.sin((time_step * np.pi) / 100) * 0.5
                 if time_step > 200 or time_step < 300:
-                    self.motors[jointName].Act(desiredAngle, np.pi / 4, 100 * self.nn.Get_Value_Of(neuronName))
+                    self.motors[jointName].Act(desiredAngle, np.pi / 4, 300)
                 else:
                     self.motors[jointName].Act(desiredAngle, -1, 40)
 
@@ -103,9 +110,11 @@ class ROBOT:
                     in_air = False
 
             # If in_air is still true, then increment the total_airtime variable.
+            if in_air:
+                total_airtime += 1
 
         f = open(f"tmp{p_id}.txt", "w")
-        f.write(str(xCoord) + ", " + str(yCoord) + ", " + str(zCoord) + ", " + str((self.max_height * 0.2) + (xCoord * 0.5) + (total_airtime * 0.01)))
+        f.write(str(xCoord) + ", " + str(yCoord) + ", " + str(zCoord) + ", " + str((self.max_height * 0.2) + (xCoord * 0.5) + (total_airtime * 0.05)))
         os.rename(f"tmp{p_id}.txt", f"fitness{p_id}.txt")
         f.close()
 

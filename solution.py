@@ -89,6 +89,16 @@ class Solution():
                            position=[-0.5, 0, 0], jointAxis="0 1 0")
         pyrosim.Send_Cube(name=f"RightCalf", pos=[-0.5, 0, -0.5], size=[0.2, 0.2, 1.0])
 
+        # Create each of the feet for the robot
+        pyrosim.Send_Joint(name=f"RightCalf_RightFoot", parent="RightCalf", child="RightFoot", type="prismatic", position=[0, 0, -0.2], jointAxis="0 0 1")
+        pyrosim.Send_Cube(name=f"RightFoot", pos=[0, 0, -0.15], size=[0.2, 0.2, 0.2])
+        pyrosim.Send_Joint(name=f"LeftCalf_LeftFoot", parent="LeftCalf", child="LeftFoot", type="prismatic", position=[0, 0, -0.2], jointAxis="0 0 1")
+        pyrosim.Send_Cube(name=f"LeftFoot", pos=[0, 0, -0.15], size=[0.2, 0.2, 0.2])
+        pyrosim.Send_Joint(name=f"FrontCalf_FrontFoot", parent="FrontCalf", child="FrontFoot", type="prismatic", position=[0, 0, -0.2], jointAxis="0 0 1")
+        pyrosim.Send_Cube(name=f"FrontFoot", pos=[0, 0, -0.15], size=[0.2, 0.2, 0.2])
+        pyrosim.Send_Joint(name=f"BackCalf_BackFoot", parent="BackCalf", child="BackFoot", type="prismatic", position=[0, 0, -0.2], jointAxis="0 0 1")
+        pyrosim.Send_Cube(name=f"BackFoot", pos=[0, 0, -0.15], size=[0.2, 0.2, 0.2])
+
         pyrosim.End()
 
 
@@ -104,6 +114,10 @@ class Solution():
         for link in ["Front", "Back", "Right", "Left"]:
             pyrosim.Send_Sensor_Neuron(name=link_index, linkName=link + "Calf")
             pyrosim.Send_Motor_Neuron(name=link_index + c.numSensorNeurons - 1, jointName=f"{link}Leg_{link}Calf")
+            link_index += 1
+        for link in ["Front", "Back", "Right", "Left"]:
+            pyrosim.Send_Sensor_Neuron(name=link_index, linkName=link + "Foot")
+            pyrosim.Send_Motor_Neuron(name=link_index + c.numSensorNeurons - 1, jointName=f"{link}Calf_{link}Foot")
             link_index += 1
         # Random Search Functionality
         for sensor_synapse in range(0, c.numSensorNeurons):
