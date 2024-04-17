@@ -58,46 +58,46 @@ class Solution():
         # Creating Robot Parts
         pyrosim.Start_URDF(f"body{self.myId}.urdf")
         length = 0.2
-        width = 1
+        width = 1.0
         height = 0.2
         currHeight = 0.5
         initXPos = 2.5
         initYPos = 2.5
-        pyrosim.Send_Cube(name=f"Body", pos=[0, 0, 1], size=[1, 1, 1])
+        pyrosim.Send_Cube(name=f"Body", pos=[0, 0, 2], size=[1, 1, 1])
         pyrosim.Send_Joint(name=f"Body_FrontLeg", parent="Body", child="FrontLeg", type="revolute",
-                           position=[0, 0.5, 1.0], jointAxis="1 0 0")
+                           position=[0, 0.5, 2], jointAxis="1 0 0")
         pyrosim.Send_Cube(name=f"FrontLeg", pos=[0, 0.5, 0], size=[length, width, height])
         pyrosim.Send_Joint(name=f"FrontLeg_FrontCalf", parent="FrontLeg", child="FrontCalf", type="revolute",
                            position=[0, 0.5, 0], jointAxis="1 0 0")
-        pyrosim.Send_Cube(name=f"FrontCalf", pos=[0, 0.5, -0.5], size=[length, 0.2, 1.0])
+        pyrosim.Send_Cube(name=f"FrontCalf", pos=[0, 0.5, -1.0], size=[length, 0.2, 1.0])
         pyrosim.Send_Joint(name=f"Body_BackLeg", parent="Body", child="BackLeg", type="revolute",
-                           position=[0, -0.5, 1.0], jointAxis="1 0 0")
+                           position=[0, -0.5, 2], jointAxis="1 0 0")
         pyrosim.Send_Cube(name=f"BackLeg", pos=[0, -0.5, 0], size=[length, width, height])
         pyrosim.Send_Joint(name=f"BackLeg_BackCalf", parent="BackLeg", child="BackCalf", type="revolute",
                            position=[0, -0.5, 0], jointAxis="1 0 0")
-        pyrosim.Send_Cube(name=f"BackCalf", pos=[0, -0.5, -0.5], size=[length, 0.2, 1])
+        pyrosim.Send_Cube(name=f"BackCalf", pos=[0, -0.5, -1.0], size=[length, 0.2, 1])
         pyrosim.Send_Joint(name=f"Body_LeftLeg", parent="Body", child="LeftLeg", type="revolute",
-                           position=[0.5, 0, 1.0], jointAxis="0 1 0")
+                           position=[0.5, 0, 2], jointAxis="0 1 0")
         pyrosim.Send_Cube(name=f"LeftLeg", pos=[0.5, 0, 0], size=[1, 0.2, height])
         pyrosim.Send_Joint(name=f"LeftLeg_LeftCalf", parent="LeftLeg", child="LeftCalf", type="revolute",
                            position=[0.5, 0, 0], jointAxis="0 1 0")
-        pyrosim.Send_Cube(name=f"LeftCalf", pos=[0.5, 0, -0.5], size=[0.2, 0.2, 1.0])
+        pyrosim.Send_Cube(name=f"LeftCalf", pos=[0.5, 0, -1.0], size=[0.2, 0.2, 1.0])
         pyrosim.Send_Joint(name=f"Body_RightLeg", parent="Body", child="RightLeg", type="revolute",
-                           position=[-0.5, 0, 1.0], jointAxis="0 1 0")
+                           position=[-0.5, 0, 2], jointAxis="0 1 0")
         pyrosim.Send_Cube(name=f"RightLeg", pos=[-0.5, 0, 0], size=[1, 0.2, height])
         pyrosim.Send_Joint(name=f"RightLeg_RightCalf", parent="RightLeg", child="RightCalf", type="revolute",
                            position=[-0.5, 0, 0], jointAxis="0 1 0")
-        pyrosim.Send_Cube(name=f"RightCalf", pos=[-0.5, 0, -0.5], size=[0.2, 0.2, 1.0])
+        pyrosim.Send_Cube(name=f"RightCalf", pos=[-0.5, 0, -1.0], size=[0.2, 0.2, 1.0])
 
         # Create each of the feet for the robot
-        pyrosim.Send_Joint(name=f"RightCalf_RightFoot", parent="RightCalf", child="RightFoot", type="prismatic", position=[0, 0, -0.2], jointAxis="0 0 1")
-        pyrosim.Send_Cube(name=f"RightFoot", pos=[0, 0, -0.15], size=[0.2, 0.2, 0.2])
-        pyrosim.Send_Joint(name=f"LeftCalf_LeftFoot", parent="LeftCalf", child="LeftFoot", type="prismatic", position=[0, 0, -0.2], jointAxis="0 0 1")
-        pyrosim.Send_Cube(name=f"LeftFoot", pos=[0, 0, -0.15], size=[0.2, 0.2, 0.2])
-        pyrosim.Send_Joint(name=f"FrontCalf_FrontFoot", parent="FrontCalf", child="FrontFoot", type="prismatic", position=[0, 0, -0.2], jointAxis="0 0 1")
-        pyrosim.Send_Cube(name=f"FrontFoot", pos=[0, 0, -0.15], size=[0.2, 0.2, 0.2])
-        pyrosim.Send_Joint(name=f"BackCalf_BackFoot", parent="BackCalf", child="BackFoot", type="prismatic", position=[0, 0, -0.2], jointAxis="0 0 1")
-        pyrosim.Send_Cube(name=f"BackFoot", pos=[0, 0, -0.15], size=[0.2, 0.2, 0.2])
+        pyrosim.Send_Joint(name=f"RightCalf_RightFoot", parent="RightCalf", child="RightFoot", type="prismatic", position=[-0.5, 0, -1.0], jointAxis="0 0 1")
+        pyrosim.Send_Cube(name=f"RightFoot", pos=[0, 0, -0.1], size=[0.2, 0.2, 0.2])
+        pyrosim.Send_Joint(name=f"LeftCalf_LeftFoot", parent="LeftCalf", child="LeftFoot", type="prismatic", position=[0.5, 0, -1.0], jointAxis="0 0 1")
+        pyrosim.Send_Cube(name=f"LeftFoot", pos=[0, 0, -0.1], size=[0.2, 0.2, 0.2])
+        pyrosim.Send_Joint(name=f"FrontCalf_FrontFoot", parent="FrontCalf", child="FrontFoot", type="prismatic", position=[0, 0.5, -1.0], jointAxis="0 0 1")
+        pyrosim.Send_Cube(name=f"FrontFoot", pos=[0, 0, -0.1], size=[0.2, 0.2, 0.2])
+        pyrosim.Send_Joint(name=f"BackCalf_BackFoot", parent="BackCalf", child="BackFoot", type="prismatic", position=[0, -0.5, -1.0], jointAxis="0 0 1")
+        pyrosim.Send_Cube(name=f"BackFoot", pos=[0, 0, -0.1], size=[0.2, 0.2, 0.2])
 
         pyrosim.End()
 

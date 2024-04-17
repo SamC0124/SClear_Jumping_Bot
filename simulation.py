@@ -26,8 +26,6 @@ class SIMULATION:
             raise Exception("INVALID VIEW TYPE GIVEN")
         pb.setAdditionalSearchPath(pybullet_data.getDataPath())
         pb.setGravity(0, 0, -9.8)
-        print(f"body{type(self.p_id)}.urdf")
-
         self.robotId = pb.loadURDF(f"body{self.p_id}.urdf")
         pyrosim.Prepare_To_Simulate(self.robotId)
 
@@ -38,7 +36,7 @@ class SIMULATION:
 
     def Run(self):
         for i in range(c.iterations):
-            self.robot.Sense(index=i)
+            self.robot.Sense(iteration=i)
             self.robot.Think()
             self.robot.Act(i)
 

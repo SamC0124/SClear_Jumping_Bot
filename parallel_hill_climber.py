@@ -23,7 +23,7 @@ class PARALLEL_HILL_CLIMBER():
             self.Evolve_For_One_Generation()
             self.Evaluate(self.children)
             self.Print()
-            self.Select()
+            self.Select(gen)
         self.Show_Best()
 
 
@@ -62,15 +62,27 @@ class PARALLEL_HILL_CLIMBER():
             self.children[child_key].weights[random.randint(0, total_rows - 1)][random.randint(0, total_cols - 1)] = random.random() * 2 - 1
 
 
-    def Select(self):
+    def Select(self, generation):
         parent_keys = self.parents.keys()
         parent_keys = list(parent_keys)
         child_keys = self.children.keys()
         child_keys = list(child_keys)
+        # We will perform a first selection based off the best node between the parent and the child
         for idx in range(len(parent_keys)):
             if float(self.parents[parent_keys[idx]].fitness[3]) < float(self.children[child_keys[idx]].fitness[3]):
                 self.parents[parent_keys[idx]] = self.children[child_keys[idx]]
 
+        # # Every 5th generation, we will then select the best parent between all the parent nodes, and apply their neural network to every robot.
+        # if generation % 5 == 0 and generation != 0:
+        #     # Find best parent neural network
+        #     best_parent_index = 0
+        #     for idx in range(len(parent_keys)):
+        #         if float(self.parents[parent_keys[idx]].fitness[3]) > float(self.parents[parent_keys[best_parent_index]].fitness[3]):
+        #             best_parent_index = self
+        #
+        #     # Set all parents to best parent value
+        #     for idx in range(len(parent_keys)):
+        #         self.parents[parent_keys[idx]] = self.parents[parent_keys[best_parent_index]]
 
     def Show_Best(self):
         best_parent = list(self.parents.items())[0][1]
