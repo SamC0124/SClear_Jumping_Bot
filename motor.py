@@ -1,3 +1,6 @@
+# Motor.py class
+# Class containing the basic motor functionality for Pyrosim robots
+
 import numpy as np
 import pybullet as pb
 import pybullet_data

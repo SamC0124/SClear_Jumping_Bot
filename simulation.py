@@ -1,3 +1,6 @@
+# Simulation.py
+# Primary source file for simulated environments and robots in each iteration of the evolutionary process.
+
 import constants as c
 import numpy as np
 import os
@@ -42,19 +45,13 @@ class SIMULATION:
 
             pb.stepSimulation(self.physicsClient)
 
-            time.sleep(0.001)
+            time.sleep(0.0001)
 
         self.Get_Fitness()
 
 
     def Save_Values(self):
         pass
-        # for motor in self.robot.motors.values():
-        #     np.savetxt(f"sensoryData/{motor.jointOfOrigin}MotorValues.csv", motor.movementMapping, delimiter=",")
-        #     np.save(f"sensoryData/{str(motor.jointOfOrigin)}MotorValuesNumpy", motor.movementMapping)
-        # for sensor in self.robot.sensors.values():
-        #     np.savetxt(f"sensoryData/{sensor.name}SensorValues.csv", sensor.values, delimiter=",")
-        #     np.save(f"sensoryData/{sensor.name}SensorValuesNumpy", sensor.values)
 
 
     def Get_Fitness(self):
