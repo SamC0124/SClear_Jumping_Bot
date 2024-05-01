@@ -43,8 +43,12 @@ class PARALLEL_HILL_CLIMBER():
         parent_keys = list(parent_keys)
         child_keys = self.children.keys()
         child_keys = list(child_keys)
-        for idx in range(len(parent_keys)):
-            print(f"{self.parents[parent_keys[idx]].fitness[3]} Fitness for {parent_keys[idx]}, {self.children[child_keys[idx]].fitness[3]} Fitness for Child #{child_keys[idx]}")
+        for idx in range(len(child_keys)):
+            try:
+                print(f"{self.parents[parent_keys[idx]].fitness[3]} Fitness for {parent_keys[idx]}, {self.children[child_keys[idx]].fitness[3]} Fitness for Child #{child_keys[idx]}")
+            except IndexError:
+                print("Inequal number of Parents and Children")
+                pass
         print("\n")
 
 
@@ -56,19 +60,28 @@ class PARALLEL_HILL_CLIMBER():
 
 
     def Mutate(self):
-        a_team = list(self.children.keys())[0:5]
-        b_team = list(self.children.keys())[5:]
-        # A/B Testing for Updating only Foot Motor Neurons, against updating any neurons for 20 iterations
+        # Standard mutation function for mutating two random neurons and one random foot neuron.
+        parent_keys = list(self.parents.keys())
         for child_key in self.children.keys():
             total_rows = c.numSensorNeurons
             total_cols = c.numMotorNeurons
-            if child_key in a_team:
-                # Attempting to mutate two feet neurons specifically
-                self.children[child_key].weights[random.randint(0, total_rows - 1)][random.randint(total_cols - 4, total_cols - 1)] = random.random() * 2 - 1
-                self.children[child_key].weights[random.randint(0, total_rows - 1)][random.randint(total_cols - 4, total_cols - 1)] = random.random() * 2 - 1
-            elif child_key in b_team:
-                self.children[child_key].weights[random.randint(0, total_rows - 1)][random.randint(0, total_cols - 1)] = random.random() * 2 - 1
-                self.children[child_key].weights[random.randint(0, total_rows - 1)][random.randint(0, total_cols - 1)] = random.random() * 2 - 1
+            for idx in range(len(parent_keys)):
+                if float(self.parents[parent_keys[idx]].fitness[3]) < 0:
+                    self.children[child_key].weights[random.randint(0, total_rows - 1)][
+                        random.randint(0, total_cols - 1)] = random.random() * 2 - 1
+                    self.children[child_key].weights[random.randint(0, total_rows - 1)][
+                        random.randint(0, total_cols - 1)] = random.random() * 2 - 1
+                    self.children[child_key].weights[random.randint(0, total_rows - 1)][
+                        random.randint(0, total_cols - 1)] = random.random() * 2 - 1
+                    self.children[child_key].weights[random.randint(0, total_rows - 1)][
+                        random.randint(0, total_cols - 1)] = random.random() * 2 - 1
+                else:
+                    self.children[child_key].weights[random.randint(0, total_rows - 1)][
+                        random.randint(total_cols - 4, total_cols - 1)] = random.random() * 2 - 1
+                    self.children[child_key].weights[random.randint(0, total_rows - 1)][
+                        random.randint(0, total_cols - 1)] = random.random() * 2 - 1
+
+
 
     def Select(self, generation):
         parent_keys = self.parents.keys()
@@ -80,8 +93,15 @@ class PARALLEL_HILL_CLIMBER():
             if float(self.parents[parent_keys[idx]].fitness[3]) < float(self.children[child_keys[idx]].fitness[3]):
                 self.parents[parent_keys[idx]] = self.children[child_keys[idx]]
 
+        # Every 10th generation, record the
+        if (generation + 1) % 10 == 0:
+            fwrite = open("ab_testing_data.txt", "a")
+            for idx in range(len(parent_keys)):
+                fwrite.write(f"{generation+460},{idx},{self.parents[parent_keys[idx]].fitness[0]},{self.parents[parent_keys[idx]].fitness[4]},{self.parents[parent_keys[idx]].fitness[3]}\n")
+            fwrite.close()
+
         # Every 100th generation, we will then select the two best parents and record all of their weights, printing out each weight in output to quickly retrieve.
-        if generation % (c.numberOfGenerations - 1) == 0 and generation != 0:
+        if generation % (c.numberOfGenerations - 10) == 0 and generation != 0:
             # Find best parent neural network
             best_parent_index = 0
             second_best_parent_index = 1

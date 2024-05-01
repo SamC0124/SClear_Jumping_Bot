@@ -19,7 +19,6 @@ class ROBOT:
         self.Prepare_To_Act()
         self.id = id
         self.nn = NEURAL_NETWORK(f"brain{p_id}.nndf")
-        self.max_height = 0
         self.in_air = True
         self.jump_counter = 0
         self.touch_matrix = np.ndarray((c.iterations, c.numSensorNeurons), dtype=int)
@@ -69,68 +68,32 @@ class ROBOT:
                 # Current location of the body unit at [0][0,1,2]. The Z characteristic is for current elevation of the
                 # body, but this doesn't account for legs touching the ground.
                 body_pos = pybullet.getLinkState(self.id, 0)
-                if body_pos[0][2] > self.max_height:
-                    self.max_height = body_pos[0][2] + 0.5
 
                 # Name of the given joint to apply force to
                 jointName = self.nn.Get_Motor_Neurons_Joint(neuronName).encode('utf-8')
                 joint_name_not_encoded = self.nn.Get_Motor_Neurons_Joint(neuronName)
 
-                # Current Timestep of the jumping cycle
-                time_step = (t % 333) # Jumping goes through a cycle every 333 time steps, starting at t = 0.
+                # Cycle of energy surges (pushing off to jump) occurs during the 300th timestep.
+                time_step = (t % 300) # Jumping goes through a cycle every 333 time steps, starting at t = 0.
 
-                # Problems:
-                # Current robot tries to jump in the wrong direction each time it jumps, evolution increases the
-
-                # Stage 1: Feet stay still, legs slightly bend to brace for next jump
-                if time_step < 200:
-                    if 'Foot' in joint_name_not_encoded:
-                        desiredPosition = self.nn.Get_Value_Of(neuronName)
-                        if desiredPosition > 0.7:
-                            desiredPosition = 0.7
-                        elif desiredPosition < -0.7:
-                            desiredPosition = -0.7
-                    elif 'Calf' in joint_name_not_encoded and ('Back' in joint_name_not_encoded or 'Left' in joint_name_not_encoded):
-                        desiredPosition = (self.nn.Get_Value_Of(neuronName))
-                    elif 'Body' in joint_name_not_encoded and ('Front' in joint_name_not_encoded or 'Right' in joint_name_not_encoded):
-                        desiredPosition = self.nn.Get_Value_Of(neuronName)
-                    else:
-                        desiredPosition = np.pi / 4
-
-                # Stage 2: Legs fully extend to create a large lift force for the body, feet impact the ground to give extra lift
-                elif time_step < 300:
-                    if 'Foot' in joint_name_not_encoded:
-                        desiredPosition = self.nn.Get_Value_Of(neuronName)
-                        if desiredPosition > 0.7:
-                            desiredPosition = 0.7
-                        elif desiredPosition < -0.7:
-                            desiredPosition = -0.7
-                    elif 'Body' in joint_name_not_encoded and ('Back' in joint_name_not_encoded or 'Left' in joint_name_not_encoded):
-                        desiredPosition = self.nn.Get_Value_Of(neuronName)
-                    elif 'Calf' in joint_name_not_encoded and ('Front' in joint_name_not_encoded or 'Right' in joint_name_not_encoded):
-                        desiredPosition = self.nn.Get_Value_Of(neuronName)
-                    else:
-                        desiredPosition = np.pi / 4
-
-                # Stage 3: Body moves back into static position to securely land robot on the ground.
+                # Legs neurons are given input signal to move
+                if 'Foot' in joint_name_not_encoded:
+                    desiredPosition = self.nn.Get_Value_Of(neuronName)
+                    # Restrict movements of prismatic joints (Forwards and backwards, act as pistons for feet) to remain connected to each leg
+                    if desiredPosition > 0.6:
+                        desiredPosition = 0.6
+                    elif desiredPosition < -0.6:
+                        desiredPosition = -0.6
+                elif 'Body' in joint_name_not_encoded:
+                    desiredPosition = self.nn.Get_Value_Of(neuronName)
+                elif 'Calf' in joint_name_not_encoded:
+                    desiredPosition = self.nn.Get_Value_Of(neuronName)
+                # If no position is given, assume this standard position.
                 else:
-                    if 'Foot' in joint_name_not_encoded:
-                        desiredPosition = -self.nn.Get_Value_Of(neuronName)
-                        if desiredPosition > 0.7:
-                            desiredPosition = 0.7
-                        elif desiredPosition < -0.7:
-                            desiredPosition = -0.7
-                    elif 'Calf' in joint_name_not_encoded and ('Back' in joint_name_not_encoded or 'Left' in joint_name_not_encoded):
-                        desiredPosition = self.nn.Get_Value_Of(neuronName)
-                    elif 'Body' in joint_name_not_encoded and ('Front' in joint_name_not_encoded or 'Right' in joint_name_not_encoded):
-                        desiredPosition = self.nn.Get_Value_Of(neuronName)
-                    else:
-                        desiredPosition = np.pi / 4
+                    desiredPosition = 0.5
 
-                # Only apply forces to the motors if the robot hasn't landed their third jump (ignoring the initial
-                # time of robot landing on the ground).
                 # Apply forces to given robot's jump
-                if time_step > 200 or time_step < 300:
+                if time_step > 200 and time_step < 300:
                     self.motors[jointName].Act(desiredPosition, np.pi / 4, 100)
                 else:
                     self.motors[jointName].Act(desiredPosition, np.pi / 4, 40)
@@ -152,21 +115,43 @@ class ROBOT:
         for iteration in range(len(self.touch_matrix)):
             # Assume the robot is in the air until proven otherwise
             in_air = True
-            if self.touch_matrix[iteration].sum() == -13:
+            if self.touch_matrix[iteration].sum() < -13:
                 in_air = False
 
             # If in_air is still true, then increment the total_airtime variable.
             if in_air:
                 total_airtime += 1
 
-        # Reduction for initial time in the sky
+        # Reduction for initial time in the sky (do not let total airtime go negative
         total_airtime = total_airtime - 100
+        if total_airtime < 0:
+            total_airtime = 0
+
+        # Problems:
+        # Current robot tries to jump in the wrong direction. We can solve this by penalizing moving in the y-direction.
+        # Robot doesn't jump three times. We should penalize the robot for each jump that it makes above the three jumps mark.
 
         # Record all fitness scores as given above, then return
         f = open(f"tmp{p_id}.txt", "w")
         # Rewarding furthest distance away from the user, and lightly awarding longest airtime.
-        # Update: Increasing the reward from airtime, because robot tends to stay only on the ground.
-        f.write(str(xCoord) + ", " + str(yCoord) + ", " + str(zCoord) + ", " + str(xCoord + (total_airtime * 0.05)))
+        # However, we care about the robot taking the quickest route, which may mean penalizing unnecessary movements.
+        # Team A will be focused on keeping the robot to be within three jump, while Team B will be focused on keeping
+        # the robot within the most direct Positive X direction. This means minimizing the deviation from Y=0 at the end
+        # of the iteration. We will try to penalize these evenly, with each extra jump reducing the total fitness by
+        # 0.5, and each unit in either y-direction reducing the fitness by 1.
+
+        # Current function is a failure
+        # if p_id % 10 < 5:
+        #     if self.jump_counter > 0 and self.jump_counter < 6:
+        #         f.write(str(xCoord) + ", " + str(yCoord) + ", " + str(zCoord) + ", " + str((xCoord * 1.5) + (total_airtime * 0.01) + ((3 - abs(3 - self.jump_counter)) * 0.5)) + ", " + str(total_airtime))
+        #     else:
+        #         f.write(str(xCoord) + ", " + str(yCoord) + ", " + str(zCoord) + ", " + str((xCoord * 1.5) + (total_airtime * 0.01) + ((6 - self.jump_counter) * 0.5)) + ", " + str(total_airtime))
+        # else:
+        #     f.write(str(xCoord) + ", " + str(yCoord) + ", " + str(zCoord) + ", " + str((xCoord * 1.5) + (total_airtime * 0.01) - (abs(yCoord))) + ", " + str(total_airtime))
+        if self.jump_counter == 3 or self.jump_counter == 4:
+            f.write(str(xCoord) + ", " + str(yCoord) + ", " + str(zCoord) + ", " + str((xCoord * 3.0) + (total_airtime * 0.02) - (abs(yCoord) * 2) + 20) + ", " + str(total_airtime))
+        else:
+            f.write(str(xCoord) + ", " + str(yCoord) + ", " + str(zCoord) + ", " + str((xCoord * 3.0) + (total_airtime * 0.02) - (abs(yCoord) * 2) - (self.jump_counter * 0.3)) + ", " + str(total_airtime))
         os.rename(f"tmp{p_id}.txt", f"fitness{p_id}.txt")
         f.close()
 
